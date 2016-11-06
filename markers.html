@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script
+  src="https://code.jquery.com/jquery-3.1.1.min.js"
+  integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+  crossorigin="anonymous"></script>
+  
+<script src="jquery.ajaxQueue.js" ></script>  
+  
+<script type="text/javascript" src="inputfile.json"></script>
+	<style>	
+	#map_canvas {
+		width: 1200px;
+		height: 1200px;
+	}
+	</style>
+</head>
+<body>
+<div id="totalAddedMarker"></div>
+<div id="map_canvas"></div>
+
+<script>
+
+	(function($) {
+		$.rand = function(arg) {
+			if ($.isArray(arg)) {
+				return arg[$.rand(arg.length)];
+			} else if (typeof arg === "number") {
+				return Math.floor(Math.random() * arg);
+			} else {
+				return 4;  // chosen by fair dice roll
+			}
+		};
+	})(jQuery);
+	
+	
+$(document).ready(function () {
+    var map;
+    var elevator;
+    var myOptions = {
+        zoom: 4,
+        center: new google.maps.LatLng(33.8119, -117.1419), 
+        mapTypeId: google.maps.MapTypeId.ROADMAP
+    };
+    map = new google.maps.Map($('#map_canvas')[0], myOptions);
+
+	var placesObject = place;
+	errorArray = [];
+	var queuCounter = 0, setLimit = 20;
+	totalAddedMarkers = 0;
+	var geoCodKeys = [
+					'AIzaSyCF82XXUtT0vzMTcEPpTXvKQPr1keMNr_4',
+					'AIzaSyAYPw6oFHktAMhQqp34PptnkDEdmXwC3s0',
+					'AIzaSyAwd0OLvubYtKkEWwMe4Fe0DQpauX0pzlk',
+					'AIzaSyDF3F09RkYcibDuTFaINrWFBOG7ilCsVL0',
+					'AIzaSyC1dyD2kzPmZPmM4-oGYnIH_0x--0hVSY8'					
+				];
+	
+	var addMarkers = function(address, queKey){
+		var key = jQuery.rand(geoCodKeys);
+		var url = 'https://maps.googleapis.com/maps/api/geocode/json?key='+key+'&address='+address+'&sensor=false';
+		
+		var qyName = '';
+		if( queKey ) {
+			qyName = queKey;
+		} else {
+			qyName = 'MyQueue'+queuCounter;
+		}
+		
+		$.ajaxq (qyName, {
+			url: url,
+			dataType: 'json'
+		}).done(function( data ) {
+					var address = getParameterByName('address', this.url);
+					var index = errorArray.indexOf(address);
+					try{
+						var p = data.results[0].geometry.location;
+						console.log('added MyQueue');
+						var latlng = new google.maps.LatLng(p.lat, p.lng);
+						new google.maps.Marker({
+							position: latlng,
+							map: map
+						});
+						totalAddedMarkers ++;
+						
+						$("#totalAddedMarker").text(totalAddedMarkers);
+						if (index > -1) {
+							errorArray.splice(index, 1);
+						}
+					}catch(e){
+						if(data.status = 'ZERO_RESULTS')
+							return false;
+							
+						addMarkers( address, 'Errror' );
+						if (index == -1) {
+							errorArray.push( address );
+						}
+					}
+		});
+		
+		queuCounter++;
+		if( queuCounter == setLimit ){
+			queuCounter = 0;
+		}
+	}
+	
+	getParameterByName = function ( name,href )
+	{
+	  name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+	  var regexS = "[\\?&]"+name+"=([^&#]*)";
+	  var regex = new RegExp( regexS );
+	  var results = regex.exec( href );
+	  if( results == null )
+		return "";
+	  else
+		return decodeURIComponent(results[1].replace(/\+/g, " "));
+	}
+	
+	for (var x = 0; x < placesObject.length; x++) {
+		var address = placesObject[x]['City'] + ', ' + placesObject[x]['State'];
+		addMarkers(address);
+	}
+});
+</script>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAXHgKWGY3dXRKUqVL9_cAFPRhidM-nTNM" type="text/javascript"></script>
+
+</body>
+</html>
