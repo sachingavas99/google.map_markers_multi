@@ -4,7 +4,6 @@
 // https://github.com/Foliotek/ajaxq
 
 (function($) {
-alert('its ajax que');
     var queues = {};
     var activeReqs = {};
 
