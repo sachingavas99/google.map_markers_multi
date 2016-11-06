@@ -17,7 +17,7 @@
 	</style>
 </head>
 <body>
-<div id="totalAddedMarker"></div>
+<div><span>Added markers count</span>:<span id="totalAddedMarker"></span></div>
 <div id="map_canvas"></div>
 
 <script>
@@ -92,6 +92,7 @@ $(document).ready(function () {
 						if(data.status = 'ZERO_RESULTS')
 							return false;
 							
+						console.log(data);
 						addMarkers( address, 'Errror' );
 						if (index == -1) {
 							errorArray.push( address );

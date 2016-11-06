@@ -1,4 +1,3 @@
-alert('place file');
 var place=[
   {
     "City": "San Leandro",
